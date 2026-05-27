@@ -2,7 +2,13 @@ const mongoose = require("mongoose");
 
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGO_CONN)
+const connectOptions = {};
+
+if (process.env.MONGO_DB_NAME) {
+    connectOptions.dbName = process.env.MONGO_DB_NAME;
+}
+
+mongoose.connect(process.env.MONGO_CONN, connectOptions)
 
 .then(() => {
 

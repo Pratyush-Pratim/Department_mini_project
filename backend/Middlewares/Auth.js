@@ -1,5 +1,7 @@
 const JWT = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || process.env.jWT_SECRET;
+
 const ensureAuthenticated = (
     req,
     res,
@@ -15,11 +17,15 @@ const ensureAuthenticated = (
         });
     }
 
+    const token = auth.startsWith("Bearer ")
+        ? auth.slice(7)
+        : auth;
+
     try {
 
         const decoded = JWT.verify(
-            auth,
-            process.env.JWT_SECRET_KEY
+            token,
+            JWT_SECRET
         );
 
         req.user = decoded;

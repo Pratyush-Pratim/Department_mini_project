@@ -1,6 +1,74 @@
-import React from "react";
+import React, { useState } from "react";
+import { api } from "../services/api";
 
 function Form() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    password: "",
+    gender: "",
+    dob: "",
+    contact: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.firstName || !formData.lastName || !formData.username || !formData.contact || !formData.password) {
+      alert("First name, last name, username, contact and password are required");
+      return;
+    }
+
+    try {
+      const response = await api.post(
+        "/auth/signup",
+        {
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          gender: formData.gender,
+          dob: formData.dob,
+          contact: formData.contact,
+        }
+      );
+
+      alert(response.data.message || "Guard enrolled successfully");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        username: "",
+        password: "",
+        gender: "",
+        dob: "",
+        contact: "",
+      });
+    } catch (err) {
+      alert(err.response?.data?.message || "Enrollment failed");
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      firstName: "",
+      lastName: "",
+      username: "",
+      password: "",
+      gender: "",
+      dob: "",
+      contact: "",
+    });
+  };
+
   return (
     <div className="min-h-screen  bg-slate-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl ">
@@ -8,7 +76,7 @@ function Form() {
           Employee Enrollment
         </h1>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           {/* First Name */}
           <div>
             <label htmlFor="firstname" className="block text-sm font-medium text-gray-700">First Name</label>
@@ -16,7 +84,9 @@ function Form() {
               type="text"
               id="firstname"
               placeholder="Enter First Name"
-              name="firstname"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -28,27 +98,34 @@ function Form() {
               type="text"
               id="lastname"
               placeholder="Enter Last Name"
-              name="lastname"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="lastname" className="block text-sm font-medium text-gray-700">Username</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
             <input
               type="text"
-              id="Username"
-              placeholder="Username"
-              name="lastname"
+              id="username"
+              placeholder="Enter Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
+
           <div>
             <label htmlFor="lastname" className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
               id="password  "
               placeholder="Enter the password"
-              name="lastname"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -58,11 +135,11 @@ function Form() {
             <span className="block text-sm font-medium text-gray-700 mb-2">Gender</span>
             <div className="flex items-center space-x-6">
               <label className="flex items-center cursor-pointer">
-                <input type="radio" name="gender" className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                <input type="radio" name="gender" value="Male" checked={formData.gender === "Male"} onChange={handleChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
                 <span className="ml-2 text-sm text-gray-600">Male</span>
               </label>
               <label className="flex items-center cursor-pointer">
-                <input type="radio" name="gender" className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                <input type="radio" name="gender" value="Female" checked={formData.gender === "Female"} onChange={handleChange} className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
                 <span className="ml-2 text-sm text-gray-600">Female</span>
               </label>
             </div>
@@ -74,18 +151,9 @@ function Form() {
             <input 
               type="date" 
               id="DOB"
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              placeholder="you@company.com"
-              name="email"
+              name="dob"
+              value={formData.dob}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
@@ -98,30 +166,9 @@ function Form() {
               id="contact"
               placeholder="+91 9859438383"
               name="contact"
+              value={formData.contact}
+              onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* Address */}
-          <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Residential Address</label>
-            <input
-              type="text"
-              id="address"
-              placeholder="Street, City, Zip Code"
-              name="address"
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* Photo */}
-          <div>
-            <label htmlFor="photo" className="block text-sm font-medium text-gray-700">Employee Photo</label>
-            <input
-              type="file"
-              id="photo"
-              name="photo"
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
             />
           </div>
 
@@ -129,6 +176,7 @@ function Form() {
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <button
               type="reset"
+              onClick={resetForm}
               className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               Clear Form

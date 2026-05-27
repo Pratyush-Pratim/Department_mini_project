@@ -1,8 +1,12 @@
 import React, { useState } from "react";
+import { api, getAuthHeader } from "../services/api";
 
 function DutyAssignForm() {
 
     const [placeType, setPlaceType] = useState("");
+    const [selectedLocation, setSelectedLocation] = useState("");
+    const [guardsCount, setGuardsCount] = useState("");
+    const [gender, setGender] = useState("");
 
     const hostelNames = [
 
@@ -36,6 +40,44 @@ function DutyAssignForm() {
         "HSS"
     ];
 
+    React.useEffect(() => {
+        // nothing to load for gender-based assignment
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!gender || !placeType || !selectedLocation) {
+            alert("Please select gender and location");
+            return;
+        }
+
+        try {
+            const response = await api.post(
+                "/duties",
+                {
+                    gender,
+                    locationType: placeType,
+                    locationName: selectedLocation,
+                    guardsCount: Number(guardsCount) || undefined,
+                },
+                {
+                    headers: getAuthHeader(),
+                }
+            );
+
+            const assignedCount = response.data?.assignedCount;
+            const msg = response.data.message || "Security Duty Assigned Successfully!";
+            alert(assignedCount ? `${msg} (${assignedCount} guard(s) assigned)` : msg);
+            setGender("");
+            setPlaceType("");
+            setSelectedLocation("");
+            setGuardsCount("");
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to assign duty");
+        }
+    };
+
     return (
         <div className="min-h-screen  bg-slate-100 flex items-center justify-center p-4">
 
@@ -45,7 +87,24 @@ function DutyAssignForm() {
                     Assign Security Duty
                 </h1>
 
-                <form className="space-y-5">
+                <form className="space-y-5" onSubmit={handleSubmit}>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                                Select Gender
+                            </label>
+
+                            <select
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                    </div>
 
                     {/* Choose Place Type */}
                     <div>
@@ -55,7 +114,10 @@ function DutyAssignForm() {
 
                         <select
                             value={placeType}
-                            onChange={(e) => setPlaceType(e.target.value)}
+                            onChange={(e) => {
+                                setPlaceType(e.target.value);
+                                setSelectedLocation("");
+                            }}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         >
                             <option value="">Select Option</option>
@@ -72,10 +134,13 @@ function DutyAssignForm() {
                             </label>
 
                             <select
+                                value={selectedLocation}
+                                onChange={(e) => setSelectedLocation(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                             >
+                                <option value="">Select Hostel</option>
                                 {hostelNames.map((hostel) => (
-                                    <option>{hostel}</option>
+                                    <option key={hostel} value={hostel}>{hostel}</option>
                                 ))}
                             </select>
                         </div>
@@ -89,12 +154,14 @@ function DutyAssignForm() {
                             </label>
 
                             <select
+                                value={selectedLocation}
+                                onChange={(e) => setSelectedLocation(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                             >
-                                <option>Select Place</option>
+                                <option value="">Select Place</option>
 
                                 {otherPlaces.map((place) => (
-                                    <option>{place}</option>
+                                    <option key={place} value={place}>{place}</option>
                                 ))}
                             </select>
                         </div>
@@ -109,13 +176,14 @@ function DutyAssignForm() {
                         <input
                             type="number"
                             placeholder="Enter Number"
+                            value={guardsCount}
+                            onChange={(e) => setGuardsCount(e.target.value)}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         />
                     </div>
 
                     {/* Assign Button */}
                     <button
-                        onClick={() => alert("Security Duty Assigned Successfully!")}
                         type="submit"
                         className="w-full py-2 px-4 rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                     >

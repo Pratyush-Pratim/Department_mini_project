@@ -4,16 +4,36 @@ const JWT = require("jsonwebtoken");
 
 const UserModel = require("../Models/User");
 
+const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || process.env.jWT_SECRET;
+
 
 // GUARD SIGNUP
 const signup = async (req, res) => {
 
     try {
 
-        const { name, password } = req.body;
+        const {
+            firstName,
+            lastName,
+            username,
+            contact,
+            password,
+            gender,
+            dob,
+        } = req.body;
+
+        if (!firstName || !lastName || !username || !contact || !password) {
+
+            return res.status(400).json({
+                message: "firstName, lastName, username, contact and password are required"
+            });
+        }
 
         const user = await UserModel.findOne({
-            name
+            $or: [
+                { contact },
+                { username },
+            ]
         });
 
         if (user) {
@@ -29,9 +49,14 @@ const signup = async (req, res) => {
         );
 
         const userModel = new UserModel({
-            name,
             password: hashedPassword,
             role: "guard",
+            firstName,
+            lastName,
+            username,
+            gender,
+            dob,
+            contact,
         });
 
         await userModel.save();
@@ -41,6 +66,14 @@ const signup = async (req, res) => {
         });
 
     } catch (err) {
+
+        if (err?.code === 11000) {
+            return res.status(409).json({
+                message: "Guard already exists with this contact"
+            });
+        }
+
+        console.log("Signup error:", err);
 
         res.status(500).json({
             message: "Internal server error"
@@ -54,10 +87,23 @@ const login = async (req, res) => {
 
     try {
 
-        const { name, password } = req.body;
+        const username = req.body?.username?.trim();
+        const contact = req.body?.contact?.trim();
+        const password = req.body?.password;
+        const loginId = username || contact;
+
+        if (!loginId || !password) {
+
+            return res.status(400).json({
+                message: "Username and password are required"
+            });
+        }
 
         const user = await UserModel.findOne({
-            name
+            $or: [
+                { username: loginId },
+                { contact: loginId },
+            ]
         });
 
         if (!user) {
@@ -81,10 +127,12 @@ const login = async (req, res) => {
 
         const jwtToken = JWT.sign(
             {
-                name: user.name,
+                id: user._id,
                 role: user.role,
+                contact: user.contact,
+                username: user.username,
             },
-            process.env.JWT_SECRET_KEY,
+            JWT_SECRET,
             {
                 expiresIn: "24h"
             }
@@ -92,7 +140,15 @@ const login = async (req, res) => {
 
         res.status(200).json({
             message: "Guard login successful",
-            jwtToken
+            jwtToken,
+            user: {
+                id: user._id,
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                contact: user.contact,
+                username: user.username,
+            }
         });
 
     } catch (err) {
@@ -110,6 +166,13 @@ const adminLogin = async (req, res) => {
     try {
 
         const { name, password } = req.body;
+
+        if (!name || !password) {
+
+            return res.status(400).json({
+                message: "Name and password are required"
+            });
+        }
 
         // DEFAULT ADMIN NAME
         if (name !== "admin") {
@@ -132,7 +195,7 @@ const adminLogin = async (req, res) => {
                 name: "admin",
                 role: "admin",
             },
-            process.env.JWT_SECRET_KEY,
+            JWT_SECRET,
             {
                 expiresIn: "24h"
             }
@@ -140,7 +203,11 @@ const adminLogin = async (req, res) => {
 
         res.status(200).json({
             message: "Admin login successful",
-            jwtToken
+            jwtToken,
+            user: {
+                name: "admin",
+                role: "admin",
+            }
         });
 
     } catch (err) {

@@ -9,8 +9,37 @@ import {
   faUsers,
   faUserCheck,
 } from "@fortawesome/free-solid-svg-icons";
+import { api, getAuthHeader } from "../services/api";
 
 function Admin() {
+  const [stats, setStats] = React.useState({
+    totalGuards: 0,
+    activeDutyGuards: 0,
+  });
+
+  React.useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const response = await api.get("/guards/stats", {
+          headers: getAuthHeader(),
+        });
+
+        setStats({
+          totalGuards: response.data.totalGuards || 0,
+          activeDutyGuards: response.data.activeDutyGuards || 0,
+        });
+      } catch (err) {
+        setStats({
+          totalGuards: 0,
+          activeDutyGuards: 0,
+        });
+      }
+    };
+
+    loadStats();
+    
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-100 p-6">
 
@@ -27,6 +56,7 @@ function Admin() {
       <div className="flex flex-col sm:flex-row justify-center gap-6 mb-10">
 
         {/* Total Guards */}
+        <Link to="/guards">
         <div className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4 w-full sm:w-96 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
           <FontAwesomeIcon
             icon={faUsers}
@@ -35,11 +65,13 @@ function Admin() {
 
           <div>
             <p className="text-slate-500">Total Guards</p>
-            <h2 className="text-3xl font-bold">120</h2>
+            <h2 className="text-3xl font-bold">{stats.totalGuards}</h2>
           </div>
         </div>
+        </Link>
 
         {/* Active Today */}
+        <Link to="/guards/active">
         <div className="bg-white p-6 rounded-2xl shadow-md flex items-center gap-4 w-full sm:w-96 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
           <FontAwesomeIcon
             icon={faUserCheck}
@@ -48,10 +80,13 @@ function Admin() {
 
           <div>
             <p className="text-slate-500">Active Today</p>
-            <h2 className="text-3xl font-bold">85</h2>
+            <h2 className="text-3xl font-bold">{stats.activeDutyGuards}</h2>
           </div>
         </div>
+        </Link>
       </div>
+
+      
 
       {/* Cards */}
       <div className="flex flex-wrap justify-center gap-6">
@@ -119,6 +154,27 @@ function Admin() {
       </Link>
         </div>
 
+        {/* Card 5 - Suspend Guard */}
+        <div className="bg-white p-6 rounded-2xl shadow-md w-96 text-center hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
+          <FontAwesomeIcon
+            icon={faUsers}
+            className="text-3xl text-red-600 mb-4"
+          />
+
+          <h2 className="text-2xl font-bold mb-2">
+            Suspend Guard
+          </h2>
+
+          <p className="text-slate-500 mb-6">
+            Remove a guard from the system.
+          </p>
+          <Link to ="/guards/suspend">
+          <button className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+            Open
+          </button>
+          </Link>
+        </div>
+
         {/* Card 4 */}
         <div className="bg-white p-6 rounded-2xl shadow-md w-96 text-center hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer">
           <FontAwesomeIcon
@@ -134,9 +190,11 @@ function Admin() {
             View past duty records.
           </p>
 
-          <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-            View
-          </button>
+          <Link to="/record">
+            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+              View
+            </button>
+          </Link>
         </div>
 
       </div>

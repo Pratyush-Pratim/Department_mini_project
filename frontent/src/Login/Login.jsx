@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 
-import axios from "axios";
-
 import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
 
 function LoginPage() {
 
@@ -36,8 +35,8 @@ function LoginPage() {
 
     try {
 
-      const response = await axios.post(
-        "http://localhost:8080/auth/admin-login",
+      const response = await api.post(
+        "/auth/admin-login",
         {
           name: "admin",
           password: adminPassword,
@@ -53,6 +52,8 @@ function LoginPage() {
         "role",
         "admin"
       );
+
+      localStorage.setItem("name", "admin");
 
       alert(response.data.message);
 
@@ -72,9 +73,12 @@ function LoginPage() {
 
     e.preventDefault();
 
+    const username = guardData.username.trim();
+    const password = guardData.password;
+
     if (
-      !guardData.username ||
-      !guardData.password
+      !username ||
+      !password
     ) {
 
       alert("Please fill all fields");
@@ -84,11 +88,11 @@ function LoginPage() {
 
     try {
 
-      const response = await axios.post(
-        "http://localhost:8080/auth/login",
+      const response = await api.post(
+        "/auth/login",
         {
-          name: guardData.username,
-          password: guardData.password,
+          username,
+          password,
         }
       );
 
@@ -100,6 +104,22 @@ function LoginPage() {
       localStorage.setItem(
         "role",
         "guard"
+      );
+
+      localStorage.setItem(
+        "contact",
+        response.data?.user?.contact || ""
+      );
+
+      localStorage.setItem(
+        "username",
+        response.data?.user?.username || guardData.username
+      );
+
+      // store full name for display in dashboard
+      localStorage.setItem(
+        "name",
+        `${response.data?.user?.firstName || ""} ${response.data?.user?.lastName || ""}`.trim()
       );
 
       alert(response.data.message);
