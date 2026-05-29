@@ -48,6 +48,23 @@ const assignDuty = async (req, res) => {
                 return res.status(400).json({ message: "Guard is on approved leave during the selected date; cannot assign duty" });
             }
 
+            // Enforce one-shift-gap if guard worked in the last week
+            const oneWeekAgo = new Date(dutyDateToCheck);
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+            const lastDuty = await DutyModel.findOne({ guard: guardId, dutyDate: { $gte: oneWeekAgo, $lt: dutyDateToCheck } }).sort({ dutyDate: -1 });
+
+            if (lastDuty && lastDuty.shift) {
+                const shiftMap = { shift1: 0, shift2: 1, shift3: 2 };
+                const indexToShift = ["shift1", "shift2", "shift3"];
+                const lastIndex = shiftMap[lastDuty.shift];
+                const allowedNext = indexToShift[(lastIndex + 2) % 3]; // one-shift gap
+
+                if (shift && shift !== allowedNext) {
+                    return res.status(400).json({ message: `Guard worked recently on ${lastDuty.shift}; next allowed shift is ${allowedNext}` });
+                }
+            }
+
             const duty = await DutyModel.create({
                 guard: guardId,
                 locationType,
@@ -92,9 +109,39 @@ const assignDuty = async (req, res) => {
                     message: "No available guards found for the selected gender (all matching guards are busy or on leave)"
                 });
             }
-            // Shuffle available candidates and pick up to requested count
-            const shuffled = available.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, Math.min(countRequested, available.length));
+            // Apply one-shift-gap rule: if a guard worked within last week, only include them
+            // if the requested `shift` matches their allowed next shift.
+            const oneWeekAgo = new Date(dutyDateToCheck);
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+            const shiftMap = { shift1: 0, shift2: 1, shift3: 2 };
+            const indexToShift = ["shift1", "shift2", "shift3"];
+
+            const filtered = [];
+
+            for (const g of available) {
+                const lastDuty = await DutyModel.findOne({ guard: g._id, dutyDate: { $gte: oneWeekAgo, $lt: dutyDateToCheck } }).sort({ dutyDate: -1 });
+
+                if (lastDuty && lastDuty.shift) {
+                    const lastIndex = shiftMap[lastDuty.shift];
+                    const allowedNext = indexToShift[(lastIndex + 2) % 3];
+
+                    if (shift && shift !== allowedNext) {
+                        // this guard not eligible for requested shift because of gap rule
+                        continue;
+                    }
+                }
+
+                filtered.push(g);
+            }
+
+            if (filtered.length === 0) {
+                return res.status(404).json({ message: "No available guards meet the shift gap requirement for the requested shift" });
+            }
+
+            // Shuffle filtered candidates and pick up to requested count
+            const shuffled = filtered.sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, Math.min(countRequested, filtered.length));
 
             // create duty entries for each selected guard
             const createdDuties = [];

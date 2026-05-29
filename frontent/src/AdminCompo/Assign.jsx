@@ -7,6 +7,7 @@ function DutyAssignForm() {
     const [selectedLocation, setSelectedLocation] = useState("");
     const [guardsCount, setGuardsCount] = useState("");
     const [gender, setGender] = useState("");
+    const [shift, setShift] = useState("");
 
     const hostelNames = [
 
@@ -47,8 +48,8 @@ function DutyAssignForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!gender || !placeType || !selectedLocation) {
-            alert("Please select gender and location");
+        if (!gender || !placeType || !selectedLocation || !shift) {
+            alert("Please select gender, location and shift");
             return;
         }
 
@@ -60,6 +61,7 @@ function DutyAssignForm() {
                     locationType: placeType,
                     locationName: selectedLocation,
                     guardsCount: Number(guardsCount) || undefined,
+                    shift,
                 },
                 {
                     headers: getAuthHeader(),
@@ -73,6 +75,7 @@ function DutyAssignForm() {
             setPlaceType("");
             setSelectedLocation("");
             setGuardsCount("");
+            setShift("");
         } catch (err) {
             alert(err.response?.data?.message || "Failed to assign duty");
         }
@@ -180,6 +183,21 @@ function DutyAssignForm() {
                             onChange={(e) => setGuardsCount(e.target.value)}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         />
+                    </div>
+
+                    {/* Shift Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Select Shift</label>
+                        <select
+                            value={shift}
+                            onChange={(e) => setShift(e.target.value)}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        >
+                            <option value="">Select Shift</option>
+                            <option value="shift1">Shift 1 — 6:00 AM to 2:00 PM</option>
+                            <option value="shift2">Shift 2 — 2:00 PM to 8:00 PM</option>
+                            <option value="shift3">Shift 3 — 8:00 PM to 6:00 AM</option>
+                        </select>
                     </div>
 
                     {/* Assign Button */}

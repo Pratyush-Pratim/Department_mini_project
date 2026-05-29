@@ -24,7 +24,8 @@ const dutySchema = new Schema({
     },
     shift: {
         type: String,
-        default: "8:00 AM - 4:00 PM",
+        enum: ["shift1", "shift2", "shift3"],
+        default: "shift1",
         trim: true,
     },
     dutyDate: {
