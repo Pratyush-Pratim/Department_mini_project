@@ -9,16 +9,18 @@ function DutyAssignForm() {
     const [gender, setGender] = useState("");
     const [shift, setShift] = useState("");
 
-    const hostelNames = [
-
+    const boysHostels = [
         "Charaideo Men's Hostel",
         "Nilachal Men's Hostel",
         "Kanchanjungha Men's Hostel",
         "Saraighat C.V. Raman Men's Hostel (SCVRMH)",
         "Transit Men's Hostel-1",
         "Patkai Men's Hostel",
-        "Bardoichila Women's Hostel ",
-        "Subansiri Women's Hostel ",
+    ];
+
+    const girlsHostels = [
+        "Bardoichila Women's Hostel",
+        "Subansiri Women's Hostel",
         "Pobitora Madam Curie Women's Hostel",
         "Pragjyotika Women's Hostel",
         "Kopili Women's Hostel",
@@ -142,7 +144,13 @@ function DutyAssignForm() {
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                             >
                                 <option value="">Select Hostel</option>
-                                {hostelNames.map((hostel) => (
+                                {(
+                                    gender === "Male"
+                                        ? boysHostels
+                                        : gender === "Female"
+                                            ? girlsHostels
+                                            : [...boysHostels, ...girlsHostels]
+                                ).map((hostel) => (
                                     <option key={hostel} value={hostel}>{hostel}</option>
                                 ))}
                             </select>
