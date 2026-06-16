@@ -1,10 +1,10 @@
-﻿# Staff Monitoring System 📊
+﻿# Staff Monitoring System 
 
 An intelligent, multi-tier automated platform designed to simplify workplace administration, track worker logs, and fairly distribute workloads using dynamic random assignment algorithms. Built as a B.Tech mini-project using the MERN stack.
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
 *   **Dynamic Work Assignment:** Automates operational workflows by taking admin enrollment inputs and pairing them with eligible workers using random-distribution backend logic.
 *   **Comprehensive Staff Logs:** Enables persistent, real-time monitoring of active tasks, completed shifts, and unassigned staff.
@@ -13,7 +13,7 @@ An intelligent, multi-tier automated platform designed to simplify workplace adm
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 *   **Frontend:** React.js, HTML5, CSS3, Modern JavaScript (ES6+)
 *   **Backend:** Node.js, Express.js
@@ -22,7 +22,7 @@ An intelligent, multi-tier automated platform designed to simplify workplace adm
 
 ---
 
-## 📂 Project Architecture
+##  Project Architecture
 
 ```text
 Department_mini_project/
